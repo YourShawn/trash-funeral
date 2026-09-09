@@ -32,6 +32,9 @@ app:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-4o-mini}
   upload-dir: ${UPLOAD_DIR:./uploads}
+  cors:
+    # Comma-separated Origin patterns. Required for non-localhost SPA hosts.
+    allowed-origin-patterns: "${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}"
 
 springdoc:
   swagger-ui:
