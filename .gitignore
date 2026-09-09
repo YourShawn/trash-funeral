@@ -1,0 +1,32 @@
+# Build
+**/target/
+**/dist/
+**/build/
+*.class
+*.jar
+*.war
+*.log
+
+# Node
+frontend/node_modules/
+frontend/.vite/
+npm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local H2 / uploads
+data/
+**/data/
+uploads/
+backend/uploads/
+backend/funeral/target/test-uploads/
+
+# OS
+Thumbs.db
+
+# Maven wrapper jar is committed; local mvn repo is not
+.mvn/wrapper/maven-wrapper.jar.download
