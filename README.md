@@ -55,6 +55,8 @@ docker compose up --build
 
 Optional: set `OPENAI_API_KEY` in `.env` for real identification.
 
+If you open the app at a **non-localhost** host (for example `http://HOST/` behind nginx), set `CORS_ALLOWED_ORIGIN_PATTERNS` in `.env` to include that origin. The browser still sends `Origin: http://HOST` on `/api` login even when nginx proxies to the backend; the default localhost-only list then yields **403 Invalid CORS request**. See `.env.example`.
+
 Optional solo local demo (bundled MySQL on the Compose network, published only on `127.0.0.1:3306`):
 
 ```bash
@@ -103,6 +105,7 @@ See `.env.example`. Important keys:
 | `OPENAI_API_KEY` | Optional; mock identifier if empty |
 | `OPENAI_MODEL` | Default `gpt-4o-mini` |
 | `UPLOAD_DIR` | Photo directory |
+| `CORS_ALLOWED_ORIGIN_PATTERNS` | Comma-separated SPA Origin patterns. **Required for non-localhost deploys.** Default: `http://localhost:*,http://127.0.0.1:*`. Set the real host in uncommitted `.env` (do not commit a public IP). |
 
 ## License
 
