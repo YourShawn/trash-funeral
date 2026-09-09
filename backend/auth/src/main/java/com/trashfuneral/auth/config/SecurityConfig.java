@@ -28,10 +28,16 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsServiceImpl userDetailsService;
+    private final String corsAllowedOriginPatterns;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsServiceImpl userDetailsService) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            UserDetailsServiceImpl userDetailsService,
+            @Value("${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*,http://103.11.78.128:*}")
+                    String corsAllowedOriginPatterns) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.corsAllowedOriginPatterns = corsAllowedOriginPatterns;
     }
 
     @Bean
@@ -57,7 +63,7 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(401);
                     response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"ok\":false,\"data\":null,\"message\":\"Unauthorized / 未登录\"}");
+                    response.getWriter().write("{\"ok\":false,\"data\":null,\"message\":\"Unauthorized / \u672a\u767b\u5f55\"}");
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
@@ -75,29 +81,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(
-            @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
-            String allowedOriginPatterns
-    ) {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(parseOriginPatterns(allowedOriginPatterns));
+        Arrays.stream(corsAllowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .forEach(cfg::addAllowedOriginPattern);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
-    }
-
-    public static List<String> parseOriginPatterns(String raw) {
-        List<String> defaults = List.of("http://localhost:*", "http://127.0.0.1:*");
-        if (raw == null || raw.isBlank()) {
-            return defaults;
-        }
-        List<String> parsed = Arrays.stream(raw.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList();
-        return parsed.isEmpty() ? defaults : parsed;
     }
 }
