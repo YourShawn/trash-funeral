@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(401);
                     response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"ok\":false,\"data\":null,\"message\":\"Unauthorized / \u672a\u767b\u5f55\"}");
+                    response.getWriter().write("{\"ok\":false,\"data\":null,\"message\":\"Unauthorized / 未登录\"}");
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
