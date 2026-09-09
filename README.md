@@ -28,14 +28,24 @@ frontend/       React 19 + Vite + TypeScript SPA (responsive)
 docs/schema.md  PK/FK documentation
 ```
 
-- MySQL 8 in Docker / production; `local` and `test` profiles use H2 (Flyway off, Hibernate DDL).
+- MySQL 8 on localhost or a private network for production; default Compose does **not** start MySQL. `local` and `test` Spring profiles use H2 (Flyway off, Hibernate DDL).
 - OpenAPI UI: `http://localhost:8080/swagger-ui.html` (`/v3/api-docs`).
 - Photos stored under `UPLOAD_DIR` (default `./uploads`), not in the database.
 
 ## Quick start (Docker Compose)
 
+MySQL must be reachable **only on localhost or a private network**. Do not expose it on a public IP or put a public host in committed config.
+
+**Docker Compose** (backend + frontend). Default `docker compose up` does **not** start MySQL; point `MYSQL_HOST` at an external instance:
+
+- Same host as Docker: `host.docker.internal` or the host gateway (Linux Compose maps `host.docker.internal` via `extra_hosts`).
+- Another container on an internal Compose network: that service hostname (for example `mysql` with the optional profile below).
+- Production: a private hostname or localhost in uncommitted `.env`.
+
 ```bash
 cp .env.example .env
+# Compose cannot use 127.0.0.1 inside the backend container for host MySQL.
+# Set MYSQL_HOST=host.docker.internal in .env (or the host gateway).
 docker compose up --build
 ```
 
@@ -44,6 +54,13 @@ docker compose up --build
 - OpenAPI: http://localhost:8080/swagger-ui.html
 
 Optional: set `OPENAI_API_KEY` in `.env` for real identification.
+
+Optional solo local demo (bundled MySQL on the Compose network, published only on `127.0.0.1:3306`):
+
+```bash
+# Set MYSQL_HOST=mysql in .env, then:
+docker compose --profile bundled-mysql up --build
+```
 
 ## Local development (no Docker)
 
@@ -64,7 +81,7 @@ npm run dev
 
 Vite proxies `/api` to `http://127.0.0.1:8080`. Open http://localhost:5173.
 
-Against MySQL 8 instead of H2, omit the `local` profile and use the variables in `.env.example`.
+Against MySQL 8 instead of H2, omit the `local` profile after MySQL 8 is up on loopback (`MYSQL_HOST=127.0.0.1`) and `trash_funeral` exists.
 
 ## Tests / smoke
 
@@ -81,7 +98,7 @@ See `.env.example`. Important keys:
 
 | Variable | Meaning |
 | --- | --- |
-| `SPRING_DATASOURCE_*` | MySQL JDBC |
+| `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_DATABASE` / `MYSQL_USER` / `MYSQL_PASSWORD` | Database. `MYSQL_HOST` in committed examples is `127.0.0.1` only; production uses a private hostname or localhost in uncommitted `.env`. Never a public IP. |
 | `JWT_SECRET` | HMAC secret (≥32 chars in real deploys) |
 | `OPENAI_API_KEY` | Optional; mock identifier if empty |
 | `OPENAI_MODEL` | Default `gpt-4o-mini` |
